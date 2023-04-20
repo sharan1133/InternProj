@@ -1,0 +1,178 @@
+from flask import Flask, render_template, request
+import pickle
+import joblib
+
+app = Flask(__name__)
+
+
+#model = joblib.load('model.joblib')
+
+with open(r'/home/sharanbalakrishnan/Desktop/InternProj/data/my_rf.bin', 'rb') as f:
+    model = pickle.load(f)
+
+
+color_mapping = {'blue': 0, 'black': 1, 'gold': 2, 'grey': 3, 'green': 4, 'white': 5, 'silver': 6,
+                 'yellow': 7, 'carbon': 8, 'purple': 9, 'orange': 10, 'pearl': 11, 'cream': 12}
+
+display_type_mapping = {'HD+': 0, 'AMOLED': 1, 'HD': 2, 'XDR': 3, 'Retina': 4}
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    
+    storage = int(request.form['storage'])
+    ram = int(request.form['ram'])
+    color = color_mapping[request.form['color']]
+    front_cam = float(request.form['front_cam'])
+    rear_cam = float(request.form['rear_cam'])
+    display = float(request.form['display'])
+    display_type = display_type_mapping[request.form['display_type']]
+    
+    
+    prediction = model.predict([[storage, ram, color, front_cam, rear_cam, display, display_type]])
+    predicted_mobile = prediction[0]
+    
+    #return render_template('result.html', result=predicted_mobile)
+    return render_template('index.html', prediction_text='Predicted Mobile Price: ₹ {:.2f}'.format(predicted_mobile))
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
+
+
+#############  HTML #################
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Mobile Phone Predictor</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+	
+	<style>
+		body {
+			padding: 50px;
+			background-color: #f9f9f9;
+		}
+		h1 {
+			margin-bottom: 50px;
+			text-align: center;
+		}
+		form {
+			max-width: 500px;
+			margin: 0 auto;
+			background-color: #fff;
+			padding: 30px;
+			border-radius: 5px;
+			box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+		}
+		label {
+			font-weight: 600;
+			margin-bottom: 10px;
+		}
+		select {
+			display: block;
+			width: 100%;
+			padding: 10px 15px;
+			font-size: 16px;
+			line-height: 1.5;
+			color: #495057;
+			background-color: #fff;
+			background-image: none;
+			border: 1px solid #ced4da;
+			border-radius: .25rem;
+			transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+		}
+		input[type="text"] {
+			display: block;
+			width: 100%;
+			padding: 10px 15px;
+			font-size: 16px;
+			line-height: 1.5;
+			color: #495057;
+			background-color: #fff;
+			background-image: none;
+			border: 1px solid #ced4da;
+			border-radius: .25rem;
+			transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+		}
+		input[type="submit"] {
+			background-color: #007bff;
+			border-color: #007bff;
+			color: #fff;
+			padding: 10px 20px;
+			border-radius: 5px;
+			cursor: pointer;
+		}
+		input[type="submit"]:hover {
+			background-color: #0069d9;
+			border-color: #0062cc;
+			color: #fff;
+		}
+	</style>
+</head>
+<body>
+	<h1>Mobile Phone Predictor</h1>
+	<form action="/predict" method="POST">
+		<label for="ram">RAM:</label>
+		<select id="ram" name="ram">
+			{% for value in [4, 6, 8, 2, 3, 12, 1, 128, 64, 256, 512, 32, 16] %}
+				<option value="{{ value }}">{{ value }}</option>
+			{% endfor %}
+		</select><br><br>
+
+		<label for="storage">Storage:</label>
+		<select id="storage" name="storage">
+			{% for value in [64, 128, 256, 32, 16, 8, 512, 1] %}
+				<option value="{{ value }}">{{ value }}</option>
+			{% endfor %}
+		</select><br><br>
+
+		<label for="color">Color:</label>
+		<select id="color" name="color">
+			{% for value in ['blue', 'black', 'gold', 'grey', 'green', 'white', 'silver', 'yellow', 'carbon', 'purple', 'orange', 'pearl', 'cream'] %}
+				<option value="{{ value }}">{{ value }}</option>
+			{% endfor %}
+		</select><br><br>
+
+		<label for="front_cam">Front Camera:</label>
+        <input type="text" id="front_cam" name="front_cam"><br><br>
+
+        <label for="rear_cam">Rear Camera:</label>
+        <input type="text" id="rear_cam" name="rear_cam"><br><br>
+    
+        <label for="display">Display:</label>
+        <input type="text" id="display" name="display"><br><br>
+    
+        <label for="display_type">Display Type:</label>
+        <select id="display_type" name="display_type">
+            {% for value in ['HD+', 'AMOLED', 'HD', 'XDR', 'Retina'] %}
+                <option value="{{ value }}">{{ value }}</option>
+            {% endfor %}
+        </select><br><br>
+    
+        <input type="submit" value="Predict">
+    </form>
+
+    {% if prediction_text %}
+    <div class="alert alert-success mt-3">
+        <strong>{{ prediction_text }}</strong>
+    </div>
+    {% endif %}
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    </body>
+    </html>
+    
+        
