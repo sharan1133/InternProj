@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>RAM Comparison</title>
+  <!-- Include Bootstrap CSS file -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1>Model Comparison</h1>
+
+    <form id="brandForm" action="{{ url_for('display_comparison') }}" method="POST">
+        <div id="brandFields">
+            <div class="form-group">
+                <label for="brand">Brand 1:</label>
+                <select class="form-control" name="brand" required>
+                    {% for brand in g.display_types %}
+                        <option value="{{ brand}}">{{ brand }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="addbrandField()">Add Brand</button>
+        <button type="submit" class="btn btn-primary">Compare</button>
+    </form>
+    
+    <script>
+        var brandFieldCount = 1;
+    
+        function addbrandField() {
+            brandFieldCount++;
+            var brandFieldHtml = `
+                <div class="form-group">
+                    <label for="brand${brandFieldCount}">Brand ${brandFieldCount}:</label>
+                    <select class="form-control" name="brand" required>
+                        {% for brand in g.display_types %}
+                            <option value="{{ brand }}">{{ brand }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            `;
+            $('#brandFields').append(brandFieldHtml);
+        }
+    </script>
+    
+    
+ 
+</div>
+{% if data is not none %}
+<h2>Comparison Results:</h2>
+<table class="table">
+<thead>
+  <tr>
+    <th>Display Type</th>
+    <th>Mean Price</th>
+    <th>Brand(Lesser than mean)</th>
+    <th>Brand(More than mean)</th>
+    <th>Mean Display Size</th>
+    <th>Camera Specs(Most)</th>
+    
+   
+  </tr>
+</thead>
+<tbody>
+  {% for row in data.iterrows() %}
+  <tr>
+    <td>{{ row[0] }}</td>
+    {% for value in row[1] %}
+    <td>{{ value }}</td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+</tbody>
+</table>
+{% endif %}
+    
+</div>
+
+<!-- Include Bootstrap JS file -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+</body>
+</html>

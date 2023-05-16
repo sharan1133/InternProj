@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+   <head>
+      <title>Compare Phones</title>
+   </head>
+   
+      <body>
+        <form>
+            <label for="comparison_type">Choose comparison type:</label>
+            <select id="comparison_type" name="comp_type">
+               <option value="brand">Brand</option>
+               <option value="display">Display</option>
+               <option value="ram">RAM</option>
+               <option value="model">Model</option>
+            </select>
+   
+            <div id="brand_div" style="display: none;">
+               <h3>Select Brands to compare:</h3>
+               {% for brand in brand_list %}
+               <input type="checkbox" name="brands[]" value="{{ brand }}"> {{ brand }}<br>
+               {% endfor %}
+            </div>
+   
+            <div id="display_div" style="display: none;">
+               <h3>Select Display Types to compare:</h3>
+               {% for display in display_types %}
+               <input type="checkbox" name="displays[]" value="{{ display }}"> {{ display }}<br>
+               {% endfor %}
+            </div>
+   
+            <div id="ram_div" style="display: none;">
+               <h3>Select RAM sizes to compare:</h3>
+               {% for ram in ram_sizes %}
+               <input type="checkbox" name="rams[]" value="{{ ram }}"> {{ ram }}<br>
+               {% endfor %}
+            </div>
+   
+            <div id="model_div" style="display: none;">
+               <h3>Select Models to compare:</h3>
+               {% for model in model_list %}
+               <input type="checkbox" name="models[]" value="{{ model }}"> {{ model }}<br>
+               {% endfor %}
+            </div>
+   
+            <br>
+            <input type="button" value="Select" onclick="showDiv()">
+            <input type="submit" value="Compare" style="display: none;">
+         </form>
+         <br>
+   
+         <script>
+            function showDiv() {
+               var comparisonType = document.getElementById("comparison_type").value;
+               var div = document.getElementById(comparisonType + "_div");
+               if (div.style.display === "none") {
+                  div.style.display = "block";
+                  document.getElementsByTagName("form")[0].setAttribute("action", "/compare/" + comparisonType);
+                  document.getElementsByTagName("input")[1].style.display = "block";
+               } else {
+                  div.style.display = "none";
+                  document.getElementsByTagName("form")[0].setAttribute("action", "/compare");
+                  document.getElementsByTagName("input")[1].style.display = "none";
+               }
+            }
+         </script>
+      </body>
+    </html>
+    
+    
+
+      
+   
+</html>

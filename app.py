@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request , send_from_directory
+from flask import Flask, render_template, request , send_from_directory 
+from flask import g
 import pickle
 import joblib
 import pandas as pd
@@ -19,6 +20,16 @@ dash_app = dash.Dash(__name__, server=app, url_base_pathname='/dashboard/' , ext
 
 #df = pd.read_csv('/home/sharanbalakrishnan/Desktop/InternProj/df2.csv')
 df = pd.read_csv('/home/sharanbalakrishnan/Desktop/InternProj/data/data_dash.csv')
+
+data = pd.read_csv('/home/sharanbalakrishnan/Desktop/InternProj/data/app_latest.csv')
+
+brand_list = sorted(data['Brand'].unique())
+display_types = sorted(data['Display_Type'].unique())
+ram_sizes = sorted(data['RAM'].unique())
+model_list = sorted(data['Model_Name'].unique())
+
+
+
 
 dash_app.layout = html.Div(children=[
     html.Title('Mobile Phone Prices and Features Dashboard'),
@@ -293,6 +304,179 @@ def home():
     return render_template("home.html")
 
 
+
+@app.route('/ram_comparison' , methods = ['GET' , 'POST'])
+def ram_comparison():
+    if request.method == 'POST':
+        selected_ram_sizes = request.form.getlist('ram')
+        selected_ram_sizes = [int(ram) for ram in selected_ram_sizes]
+        #dic = []
+        #val1 = float(request.form['ram1'])
+        #val2 = float(request.form['ram2'])
+        #dic.append(val1)
+        #dic.append(val2)
+
+        print(request.form)
+        #print(dic)
+        # Perform the RAM comparison using the Ram_comparison function
+        comparison_data = Ram_comparison(selected_ram_sizes, data)
+        #comparison_data = Ram_comparison(dic, data)
+        print(comparison_data)
+        # Render the template with the RAM comparison results
+        return render_template('ram_comp.html', data=comparison_data)
+    else:
+        return render_template('ram_comp.html' , data = None)
+    
+
+@app.route('/model_comparison' , methods = ['GET' , 'POST'])
+def model_comparison():
+    g.model_list = model_list
+    if request.method == 'POST':
+        selected_models = request.form.getlist('model')
+        selected_models= [model for model in selected_models]
+        #dic = []
+        #val1 = float(request.form['ram1'])
+        #val2 = float(request.form['ram2'])
+        #dic.append(val1)
+        #dic.append(val2)
+
+        print(request.form)
+        #print(dic)
+        # Perform the RAM comparison using the Ram_comparison function
+        comparison_data = Model_comparison(selected_models, data)
+        #comparison_data = Ram_comparison(dic, data)
+        print(comparison_data)
+        # Render the template with the RAM comparison results
+        return render_template('model_comp.html', data=comparison_data)
+    else:
+        return render_template('model_comp.html' , data = None)
+    
+
+
+@app.route('/brand_comparison' , methods = ['GET' , 'POST'])
+def brand_comparison():
+    g.brand_list = brand_list
+    if request.method == 'POST':
+        selected_brands = request.form.getlist('brand')
+        selected_brands= [brand for brand in selected_brands]
+        #dic = []
+        #val1 = float(request.form['ram1'])
+        #val2 = float(request.form['ram2'])
+        #dic.append(val1)
+        #dic.append(val2)
+
+        print(request.form)
+        #print(dic)
+        # Perform the RAM comparison using the Ram_comparison function
+        comparison_data = Brand_comparison(selected_brands, data)
+        #comparison_data = Ram_comparison(dic, data)
+        print(comparison_data)
+        # Render the template with the RAM comparison results
+        return render_template('brand_comp.html', data=comparison_data)
+    else:
+        return render_template('brand_comp.html' , data = None)
+    
+
+@app.route('/display_comparison' , methods = ['GET' , 'POST'])
+def display_comparison():
+    g.display_types = display_types
+    if request.method == 'POST':
+        selected_disps = request.form.getlist('brand')
+        selected_disps= [disps for disps in selected_disps]
+        #dic = []
+        #val1 = float(request.form['ram1'])
+        #val2 = float(request.form['ram2'])
+        #dic.append(val1)
+        #dic.append(val2)
+
+        print(request.form)
+        #print(dic)
+        # Perform the RAM comparison using the Ram_comparison function
+        comparison_data = Display_comparison(selected_disps, data)
+        #comparison_data = Ram_comparison(dic, data)
+        print(comparison_data)
+        # Render the template with the RAM comparison results
+        return render_template('display_comp.html', data=comparison_data)
+    else:
+        return render_template('display_comp.html' , data = None)
+    
+
+
+
+
+
+def Brand_comparison(brand_list, data):
+    stats_dict = {}
+    for brand in brand_list:
+        stats = [brand, 
+                 data[data['Brand'] == brand].RAM.value_counts().index[0], 
+                 data[data['Brand'] == brand].Storage.value_counts().index[0], 
+                 data[data['Brand'] == brand].Display_Type.value_counts().index[0], 
+                 data[data['Brand'] == brand].iloc[: , 11:13].value_counts().index[0], 
+                 data[data['Brand'] == brand].Color.describe().top, 
+                 float(data[data['Brand'] == brand].Price.max()), 
+                 float(data[data['Brand'] == brand].Price.min()), 
+                 float(data[data['Brand'] == brand].Price.mean())]
+        stats_dict[brand] = stats
+    
+    df = pd.DataFrame.from_dict(stats_dict, orient='index',
+                                 columns=['Brand', 'RAM', 'Storage', 'Display_Type', 'Camera', 'Color', 'Max_Price', 'Min_Price', 'Mean_Price'])
+    return df.set_index('Brand')
+
+
+def Display_comparison(display_types, df):
+    
+    stats = []
+    for display_type in display_types:
+        dis_stats = [display_type ,
+                     float(df[df['Display_Type'] == display_type].Price.mean()),
+                     df[df['Price'] < df[df['Display_Type'] == display_type].Price.mean()].Brand.value_counts().index[0],
+                     df[df['Price'] > df[df['Display_Type'] == display_type].Price.mean()].Brand.value_counts().index[0],
+                     float(df[(df['Display_Type'] == display_type)].Display_Size.mean()),
+                     df[df['Display_Type'] == display_type].iloc[: , 11:13].value_counts().index[0]
+                    ]
+        stats.append(dis_stats)
+         
+    df = pd.DataFrame(stats, 
+                      columns=['Display_Type', 'Mean_Price', 'Brand(Lesser than mean)', 'Brand(More than mean)', 'Mean_Display_Size', 'Camera_Specs(Most)'])
+    return df.set_index('Display_Type')
+
+def Ram_comparison(ram_sizes, df):
+    
+    stats = []
+    for ram_size in ram_sizes:
+        ram_stats = [ram_size ,
+                     df[df['RAM'] == ram_size].Brand.value_counts().index[0],
+                     df[(df['RAM'] == ram_size) & (df['Price'] == df[(df['RAM'] == ram_size)].Price.min())].Brand.value_counts().index[0],
+                     float(df[(df['RAM'] == ram_size)].Price.min()),
+                     float(df[(df['RAM'] == ram_size)].Price.mean()),
+                     float(df[(df['RAM'] == ram_size)].Price.max()),
+                     df[(df['RAM'] == ram_size) & (df['Price'] == df[(df['RAM'] == ram_size)].Price.max())].Brand.value_counts().index[0],
+                     #df[(df['RAM'] == ram_size) & (df['Price'] == df[(df['RAM'] == ram_size)].Price.min())].Brand.value_counts().index[0],
+                     df[(df['RAM'] == ram_size)].Storage.value_counts().index[0],
+                     df[(df['RAM'] == ram_size)].Storage.value_counts().index[-1]]
+        stats.append(ram_stats)
+         
+    data = pd.DataFrame(stats, 
+                      columns=['RAM', 'Top Brand', 'Brand (lowest price)', 'Min price', 'Mean price', 'Max price', 'Brand (highest price)', 'Storage (Most Freq)', 'Storage (Least Freq)'])
+    return data.set_index('RAM')
+
+def Model_comparison(models, df):
+    
+    stats = []
+    for model in models:
+        model_stats = [model ,
+                     float(df[df['Model_Name'] == model].Price.values[0]),
+                     df[df['Model_Name'] == model].RAM.values[0],
+                     df[df['Model_Name'] == model].Storage.values[0],
+                     df[df['Model_Name'] == model].Display_Type.values[0],
+                     df[df['Model_Name'] == model].iloc[: , 11:13].value_counts().index[0]
+                    ]
+        stats.append(model_stats)
+         
+    data = pd.DataFrame(stats, 
+                      columns=['Model Name' , 'Price', 'RAM', 'Storage', 'Display Type', 'Camera Specs'])
+    return data.set_index('Model Name')
 
 if __name__ == '__main__':
     app.run(debug=True)

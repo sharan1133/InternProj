@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>RAM Comparison</title>
+  <!-- Include Bootstrap CSS file -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1>Model Comparison</h1>
+
+    <form id="modelForm" action="{{ url_for('model_comparison') }}" method="POST">
+        <div id="modelFields">
+            <div class="form-group">
+                <label for="model1">Model 1:</label>
+                <select class="form-control" name="model" required>
+                    {% for model in g.model_list %}
+                        <option value="{{ model}}">{{ model }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="addmodelField()">Add Model</button>
+        <button type="submit" class="btn btn-primary">Compare</button>
+    </form>
+    
+    <script>
+        var modelFieldCount = 1;
+    
+        function addmodelField() {
+            modelFieldCount++;
+            var modelFieldHtml = `
+                <div class="form-group">
+                    <label for="model${modelFieldCount}">Model ${modelFieldCount}:</label>
+                    <select class="form-control" name="model" required>
+                        {% for model in g.model_list %}
+                            <option value="{{ model }}">{{ model }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            `;
+            $('#modelFields').append(modelFieldHtml);
+        }
+    </script>
+    
+
+
+       
+ 
+</div>
+{% if data is not none %}
+<h2>Comparison Results:</h2>
+<table class="table">
+<thead>
+  <tr>
+    <th>Model Name</th>
+    <th>Price</th>
+    <th>RAM</th>
+    <th>Storage</th>
+    <th>Display Type</th>
+    <th>Camera Specs</th>
+   
+  </tr>
+</thead>
+<tbody>
+  {% for row in data.iterrows() %}
+  <tr>
+    <td>{{ row[0] }}</td>
+    {% for value in row[1] %}
+    <td>{{ value }}</td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+</tbody>
+</table>
+{% endif %}
+    
+</div>
+
+<!-- Include Bootstrap JS file -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>RAM Comparison</title>
+  <!-- Include Bootstrap CSS file -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1>RAM Comparison</h1>
+   
+        <!---<form action="{{ url_for('ram_comparison') }}" method="POST">
+          
+              <label for="ram1">RAM 1:</label>
+              <select id="ram1" name="ram1">
+                  {% for ram1 in [1, 2, 3, 4, 6, 8, 12] %}
+                      <option value="{{ ram1 }}">{{ ram1 }}</option>
+                  {% endfor %}
+              </select><br><br>
+
+              <label for="ram2">RAM 2:</label>
+              <select id="ram2" name="ram2">
+                  {% for ram2 in [1, 2, 3, 4, 6, 8, 12] %}
+                      <option value="{{ ram2 }}">{{ ram2 }}</option>
+                  {% endfor %}
+              </select><br><br>
+            
+            
+            <button type="submit" class="btn btn-primary">Compare</button>
+          </form>-->
+          <form id="ramForm" action="{{ url_for('ram_comparison') }}" method="POST">
+            <div id="ramFields">
+                <div class="form-group">
+                    <label for="ram1">RAM 1:</label>
+                    <select class="form-control" name="ram" required>
+                        {% for ram in [1, 2, 3, 4, 6, 8, 12] %}
+                            <option value="{{ ram }}">{{ ram }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="addRamField()">Add RAM</button>
+            <button type="submit" class="btn btn-primary">Compare</button>
+        </form>
+        
+        <script>
+            var ramFieldCount = 1;
+        
+            function addRamField() {
+                ramFieldCount++;
+                var ramFieldHtml = `
+                    <div class="form-group">
+                        <label for="ram${ramFieldCount}">RAM ${ramFieldCount}:</label>
+                        <select class="form-control" name="ram" required>
+                            {% for ram in [1, 2, 3, 4, 6, 8, 12] %}
+                                <option value="{{ ram }}">{{ ram }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                `;
+                $('#ramFields').append(ramFieldHtml);
+            }
+        </script>
+        
+          
+     
+  </div>
+  {% if data is not none %}
+  <h2>Comparison Results:</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>RAM</th>
+        <th>Top Brand</th>
+        <th>Brand (lowest price)</th>
+        <th>Min price</th>
+        <th>Mean price</th>
+        <th>Max price</th>
+        <th>Brand (highest price)</th>
+        <th>Storage (Most Freq)</th>
+        <th>Storage (Least Freq)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in data.iterrows() %}
+      <tr>
+        <td>{{ row[0] }}</td>
+        {% for value in row[1] %}
+        <td>{{ value }}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+        
+</div>
+
+  <!-- Include Bootstrap JS file -->
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+</body>
+</html>
